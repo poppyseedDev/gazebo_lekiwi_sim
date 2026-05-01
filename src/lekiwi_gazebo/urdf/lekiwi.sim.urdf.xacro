@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="lekiwi">
+
+  <!--
+    Sim-only top-level URDF.
+
+    Includes the same kinematic/visual modules as lekiwi_description's main
+    URDF, but skips lekiwi.control.xacro (which references the real-robot
+    sts_hardware_interface and bno055 plugins). Adds Gazebo elements for
+    drive + sensors via lekiwi_gazebo's lekiwi.gazebo.xacro.
+  -->
+
+  <xacro:include filename="$(find lekiwi_description)/urdf/lekiwi.common.xacro"/>
+  <xacro:include filename="$(find lekiwi_description)/urdf/base/base.module.xacro"/>
+  <xacro:include filename="$(find lekiwi_description)/urdf/pantilt/pantilt.module.xacro"/>
+  <xacro:include filename="$(find lekiwi_gazebo)/urdf/lekiwi.gazebo.xacro"/>
+
+  <!-- Wheel geometry shared with the real-robot control xacro -->
+  <xacro:property name="wheel_radius" value="0.051"/>
+  <xacro:property name="offset" value="${pi/3}"/>
+  <xacro:property name="theta" value="${2*pi/3}"/>
+  <xacro:property name="max_velocity_steps" value="2890"/>
+  <xacro:property name="max_velocity_rads" value="${max_velocity_steps*2*pi/4096}"/>
+  <xacro:property name="max_torque_nm" value="2.942"/>
+
+  <!-- Pan/tilt joint limits — needed by pantilt.module.xacro -->
+  <xacro:property name="pan_joint_lower"  value="${-pi/2}"/>
+  <xacro:property name="pan_joint_upper"  value="${pi/2}"/>
+  <xacro:property name="tilt_joint_lower" value="${-pi/2}"/>
+  <xacro:property name="tilt_joint_upper" value="${pi/2}"/>
+
+  <!-- Pan/tilt center steps placeholder for pantilt.module (unused in sim) -->
+  <xacro:arg name="pan_center_steps"  default="2048"/>
+  <xacro:arg name="tilt_center_steps" default="2048"/>
+
+  <link name="base_footprint"/>
+
+  <xacro:lekiwi_base_module parent="base_footprint">
+    <origin xyz="0 0 ${wheel_radius - wheel_base_offset_z}" rpy="0 0 0"/>
+  </xacro:lekiwi_base_module>
+
+  <xacro:pantilt_module parent="base_link">
+    <origin xyz="${pantilt_base_offset_x} 0 ${pantilt_base_offset_z}" rpy="0 0 0"/>
+  </xacro:pantilt_module>
+
+  <xacro:lekiwi_gazebo/>
+
+</robot>

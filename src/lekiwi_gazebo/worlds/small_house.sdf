@@ -1,0 +1,241 @@
+<?xml version="1.0"?>
+<sdf version="1.10">
+  <world name="small_house">
+    <!--
+      Compact 3-room apartment: 8m x 6m footprint.
+        Living room   (left,  4m x 6m)
+        Hallway       (middle, 1.5m wide N-S corridor)
+        Bedroom       (top right, 3.5m x 3m)
+        Kitchen nook  (bottom right, 3.5m x 3m)
+      Walls are 0.1m thick, 1.5m tall. Doorways are 0.9m gaps.
+      Robot spawns near (0, 0) — middle of the living room.
+    -->
+
+    <scene>
+      <ambient>0.5 0.5 0.5 1</ambient>
+      <background>0.7 0.85 0.95 1</background>
+      <shadows>false</shadows>
+    </scene>
+
+    <physics name="5ms" type="ignored">
+      <max_step_size>0.005</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-contact-system" name="gz::sim::systems::Contact"/>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.9 0.9 0.9 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.4 0.2 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>50 50</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>50 50</size></plane></geometry>
+          <material>
+            <ambient>0.85 0.78 0.70 1</ambient>
+            <diffuse>0.85 0.78 0.70 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================
+         Macro shorthand: each <model><static> is one wall segment.
+         Wall convention: pose centered, 0.1m thick, 1.5m tall.
+         Coordinates: x is left/right, y is up/down on the floor plan,
+         room origin at (0, 0).
+         Outer footprint: x ∈ [-4, 4], y ∈ [-3, 3]
+         ============================================================ -->
+
+    <!-- Outer walls — south (bottom, y=-3) -->
+    <model name="wall_south_left">
+      <static>true</static>
+      <pose>-2 -3 0.75 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>4 0.1 1.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>4 0.1 1.5</size></box></geometry>
+          <material><ambient>0.95 0.92 0.85 1</ambient><diffuse>0.95 0.92 0.85 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="wall_south_right">
+      <static>true</static>
+      <pose>2.45 -3 0.75 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>3.1 0.1 1.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>3.1 0.1 1.5</size></box></geometry>
+          <material><ambient>0.95 0.92 0.85 1</ambient><diffuse>0.95 0.92 0.85 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Outer walls — north (top, y=3) -->
+    <model name="wall_north_left">
+      <static>true</static>
+      <pose>-2 3 0.75 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>4 0.1 1.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>4 0.1 1.5</size></box></geometry>
+          <material><ambient>0.95 0.92 0.85 1</ambient><diffuse>0.95 0.92 0.85 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="wall_north_right">
+      <static>true</static>
+      <pose>2.45 3 0.75 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>3.1 0.1 1.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>3.1 0.1 1.5</size></box></geometry>
+          <material><ambient>0.95 0.92 0.85 1</ambient><diffuse>0.95 0.92 0.85 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Outer walls — west (left, x=-4) and east (right, x=4) -->
+    <model name="wall_west">
+      <static>true</static>
+      <pose>-4 0 0.75 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>0.1 6 1.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.1 6 1.5</size></box></geometry>
+          <material><ambient>0.95 0.92 0.85 1</ambient><diffuse>0.95 0.92 0.85 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="wall_east">
+      <static>true</static>
+      <pose>4 0 0.75 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>0.1 6 1.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.1 6 1.5</size></box></geometry>
+          <material><ambient>0.95 0.92 0.85 1</ambient><diffuse>0.95 0.92 0.85 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Interior wall: vertical divider between living room and right side, x=0.
+         Two segments (top and bottom), leaving a single 1.6m hallway opening
+         at y ∈ [-0.8, 0.8] so the robot at (0, 0) spawns in open space. -->
+    <model name="div_v_bottom">
+      <static>true</static>
+      <pose>0 -1.9 0.75 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>0.1 2.2 1.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.1 2.2 1.5</size></box></geometry>
+          <material><ambient>0.9 0.85 0.75 1</ambient><diffuse>0.9 0.85 0.75 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="div_v_top">
+      <static>true</static>
+      <pose>0 1.9 0.75 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>0.1 2.2 1.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.1 2.2 1.5</size></box></geometry>
+          <material><ambient>0.9 0.85 0.75 1</ambient><diffuse>0.9 0.85 0.75 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Interior wall: horizontal divider on right side, y=0.
+         Starts at x=0.5 (leaves the central hallway exit open) and ends at
+         x=2.5; doorway from x=2.5 to x=3.425 connects bedroom to kitchen. -->
+    <model name="div_h_inner">
+      <static>true</static>
+      <pose>1.5 0 0.75 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>2.0 0.1 1.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>2.0 0.1 1.5</size></box></geometry>
+          <material><ambient>0.9 0.85 0.75 1</ambient><diffuse>0.9 0.85 0.75 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="div_h_outer">
+      <static>true</static>
+      <pose>3.7 0 0.75 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>0.55 0.1 1.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.55 0.1 1.5</size></box></geometry>
+          <material><ambient>0.9 0.85 0.75 1</ambient><diffuse>0.9 0.85 0.75 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- ============================================================
+         Furniture-ish obstacles — thin so the robot has space to plan
+         ============================================================ -->
+
+    <!-- Living room: a sofa (long box) and a table (short flat box) -->
+    <model name="sofa">
+      <static>true</static>
+      <pose>-3.4 -1.8 0.4 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>1.0 0.6 0.8</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>1.0 0.6 0.8</size></box></geometry>
+          <material><ambient>0.4 0.3 0.5 1</ambient><diffuse>0.4 0.3 0.5 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="coffee_table">
+      <static>true</static>
+      <pose>-2.5 -0.5 0.25 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>0.8 0.5 0.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.8 0.5 0.5</size></box></geometry>
+          <material><ambient>0.4 0.25 0.15 1</ambient><diffuse>0.4 0.25 0.15 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="bookshelf">
+      <static>true</static>
+      <pose>-3.7 2.4 0.6 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>0.4 1.0 1.2</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.4 1.0 1.2</size></box></geometry>
+          <material><ambient>0.3 0.2 0.1 1</ambient><diffuse>0.3 0.2 0.1 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Bedroom (top right): a bed -->
+    <model name="bed">
+      <static>true</static>
+      <pose>2.5 2.0 0.3 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>1.4 1.9 0.6</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>1.4 1.9 0.6</size></box></geometry>
+          <material><ambient>0.6 0.45 0.4 1</ambient><diffuse>0.6 0.45 0.4 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Kitchen nook (bottom right): counter and a stool -->
+    <model name="counter">
+      <static>true</static>
+      <pose>2.0 -2.6 0.45 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><box><size>2.5 0.7 0.9</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>2.5 0.7 0.9</size></box></geometry>
+          <material><ambient>0.85 0.85 0.85 1</ambient><diffuse>0.85 0.85 0.85 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="stool">
+      <static>true</static>
+      <pose>1.5 -1.7 0.25 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><cylinder><radius>0.18</radius><length>0.5</length></cylinder></geometry></collision>
+        <visual name="v"><geometry><cylinder><radius>0.18</radius><length>0.5</length></cylinder></geometry>
+          <material><ambient>0.2 0.2 0.2 1</ambient><diffuse>0.2 0.2 0.2 1</diffuse></material></visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>

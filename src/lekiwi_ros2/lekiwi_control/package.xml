@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>lekiwi_control</name>
+  <version>0.1.0</version>
+  <description>High-level control nodes and diagnostics for LeKiwi robot</description>
+  <maintainer email="adityakamath@live.com">Aditya Kamath (Kamath Robotics)</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Runtime dependencies for launch files -->
+  <exec_depend>lekiwi_description</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>joint_state_broadcaster</exec_depend>
+  <exec_depend>omni_wheel_drive_controller</exec_depend>
+  <exec_depend>forward_command_controller</exec_depend>
+  <exec_depend>imu_sensor_broadcaster</exec_depend>
+  <exec_depend>sts_hardware_interface</exec_depend>
+  <exec_depend>bno055_hardware_interface</exec_depend>
+  <!-- <exec_depend>teleop_twist_joy</exec_depend> -->
+  <exec_depend>joy_teleop</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
