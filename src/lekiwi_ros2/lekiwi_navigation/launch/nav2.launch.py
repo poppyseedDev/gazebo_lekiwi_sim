@@ -19,7 +19,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'map',
             default_value=PathJoinSubstitution([
-                FindPackageShare('lekiwi_navigation'), 'maps', 'empty.yaml'
+                FindPackageShare('lekiwi_navigation'), 'maps', 'small_house.yaml'
             ]),
             description='Path to map.yaml. Ignored when use_localization:=False '
                         '(active SLAM provides the map dynamically).',

@@ -159,7 +159,7 @@ To use a different world: pass `world:=<file>` to `sim_bringup.launch.py`. Spawn
 - **Pantilt removed in sim** — the camera mount sits 5 cm above the LD06 plane and would otherwise show up as a permanent "wall" in front of the robot.
 - **Inflation 0.25 m** — sized for the 1.6 m hallway in `small_house`. Larger inflation makes the planner unable to find paths in narrow passages.
 - **Holonomic Nav2** — `motion_model: Omni` for MPPI, `min_y_velocity_threshold: 0.001` (was 0.5 — a diff-drive default that silently kills lateral motion), `velocity_smoother` Y components ±0.4 (was 0).
-- **slam_toolbox startup race** — slam can drop the first scan if it activates before the bridge has `/scan` flowing. The "Phase 1 reproduction" flow above starts slam in a separate terminal *after* the sim is up to avoid this. The `active_slam.launch.py` "all-in-one" alternative is included for completeness but has known DDS startup races on slow VMs.
+- **slam_toolbox startup race** — slam can drop the first scan if it activates before the bridge has `/scan` flowing. The "Phase 1 reproduction" flow above starts slam in a separate terminal *after* the sim is up to avoid this. We tried an all-in-one `active_slam.launch.py` but it had unfixable DDS startup races on slow VMs and was removed; the multi-terminal flow is the supported path.
 - **Killing stale sims**: `Ctrl+C` doesn't always reap children. If a relaunch shows ghost robots or wrong worlds, run `pkill -9 -f "gz sim|ruby.*gz|robot_state_publisher|parameter_bridge|slam_toolbox|rviz2|ros2 launch|explore"`.
 
 ## What's next (Phases 2+)
