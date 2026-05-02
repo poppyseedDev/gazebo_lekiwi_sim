@@ -2,18 +2,19 @@
 
 Gazebo Harmonic simulation of a **LeKiwi mobile manipulator** — the SIGRobotics-UIUC 3-wheel omni base, with a 2D LD06 LiDAR — built on top of [Aditya Kamath's `lekiwi_ros2`](https://github.com/adityakamath/lekiwi_ros2).
 
-See [MISSION.md](MISSION.md) for the broader project goals (mobile manipulation, language-driven tasks, sim-to-real). This repo covers **Phase 1 — Navigation**.
+See [MISSION.md](MISSION.md) for the broader project goals (mobile manipulation, language-driven tasks, sim-to-real).
+
+**Docs:**
+- [docs/SETUP.md](docs/SETUP.md) — one-time install on a fresh machine
+- [docs/USAGE.md](docs/USAGE.md) — command recipes (mapping, navigation, "go to ball")
+- [docs/PROGRESS.md](docs/PROGRESS.md) — what's done so far, phase by phase
 
 ## Status
 
-**Phase 1: complete.** Verified end-to-end in Gazebo Harmonic on Jazzy:
-- Holonomic drive via `cmd_vel` (Gazebo `VelocityControl` plugin)
-- 2D LiDAR mapping via `slam_toolbox`
-- Autonomous frontier exploration via `explore_lite` + Nav2
-- Saved-map navigation: AMCL localizes, Nav2 plans + drives to clicked goals (MPPI controller in Omni mode)
-- Tested in three worlds: `empty.sdf`, `depot.sdf`, `small_house.sdf` (a 3-room apartment)
+- **Phase 1 — Navigation: complete** (`91ed5c0`) — autonomous SLAM + saved-map navigation working end-to-end.
+- **Phase 2 — Perception, v1: working** (`c351ed0`) — `"go to the red/yellow/blue ball"` demo. Sim camera + YOLOv8 + color-aware goal sender + Nav2.
 
-A reference saved map of the apartment is in [`src/lekiwi_ros2/lekiwi_navigation/maps/small_house.{pgm,yaml}`](src/lekiwi_ros2/lekiwi_navigation/maps/).
+Full per-phase status in [docs/PROGRESS.md](docs/PROGRESS.md). Reference saved map of the apartment is at [`src/lekiwi_ros2/lekiwi_navigation/maps/small_house.{pgm,yaml}`](src/lekiwi_ros2/lekiwi_navigation/maps/).
 
 ## Hardware modeled
 
@@ -21,116 +22,12 @@ A reference saved map of the apartment is in [`src/lekiwi_ros2/lekiwi_navigation
 - **Sensor**: 2D LiDAR (LD06) mounted ~16 cm above the floor
 - **Pantilt + camera**: present in `lekiwi_description` for the real robot, **excluded from the sim URDF** (the tilt mount sits 5 cm above the laser plane and the LD06 would otherwise see it as an obstacle in front of the robot — see comment in `lekiwi.sim.urdf.xacro`).
 
-## Requirements
+## Quick start
 
-- Ubuntu 24.04 (tested on ARM64 inside UTM/Apple Silicon and on x86_64)
-- ROS 2 Jazzy desktop
-- `ros-jazzy-ros-gz` (Gazebo Harmonic + bridge)
-- `ros-jazzy-navigation2`, `ros-jazzy-nav2-bringup`, `ros-jazzy-slam-toolbox`
-- `ros-jazzy-teleop-twist-keyboard` (for manual driving)
-
-## One-time setup
-
-```bash
-git clone git@github.com:poppyseedDev/gazebo_lekiwi_sim.git ~/lekiwi_ws
-cd ~/lekiwi_ws/src
-
-# Frontier explorer for active SLAM (upstream, vendored separately):
-git clone https://github.com/robo-friends/m-explore-ros2
-
-# (Real robot only — skip for sim-only work)
-# git clone https://github.com/adityakamath/sts_hardware_interface
-
-cd ~/lekiwi_ws
-source /opt/ros/jazzy/setup.bash
-rosdep install --from-paths src -y --ignore-src
-colcon build --symlink-install
-echo "source $HOME/lekiwi_ws/install/setup.bash" >> ~/.bashrc
-source install/setup.bash
-```
-
-## Reproducing Phase 1
-
-The reliable flow uses **separate terminals** for each subsystem so DDS/lifecycle races don't sabotage startup. Each terminal needs the workspace overlay sourced (`~/.bashrc` does this automatically after the setup above).
-
-### A. View the URDF
-
-```bash
-ros2 launch lekiwi_description display.launch.py
-```
-
-### B. Map an environment with autonomous exploration
-
-**Terminal 1 — sim:**
-```bash
-ros2 launch lekiwi_gazebo sim_bringup.launch.py world:=small_house.sdf
-```
-Wait until Gazebo and RViz are both up.
-
-**Terminal 2 — slam_toolbox:**
-```bash
-ros2 launch lekiwi_gazebo slam.launch.py
-```
-Verify it activated:
-```bash
-ros2 lifecycle get /slam_toolbox        # → active [3]
-ros2 topic hz /map                      # → ~0.2 Hz
-```
-
-**Terminal 3 — Nav2 (no localization, slam supplies map):**
-```bash
-ros2 launch lekiwi_navigation nav2.launch.py \
-  use_localization:=False use_composition:=False
-```
-Verify the BT navigator activated:
-```bash
-ros2 lifecycle get /bt_navigator        # → active [3]
-```
-
-**Terminal 4 — frontier explorer:**
-```bash
-ros2 run explore_lite explore --ros-args \
-  --params-file ~/lekiwi_ws/install/lekiwi_gazebo/share/lekiwi_gazebo/config/explore_lite.yaml \
-  -p use_sim_time:=true \
-  -r /tf:=tf -r /tf_static:=tf_static
-```
-The robot will drive a coverage tour of the world. When `explore_lite` logs **"No frontiers found, stopping"**, exploration is done.
-
-**Terminal 5 — save the map:**
-```bash
-ros2 run nav2_map_server map_saver_cli \
-  -f $HOME/lekiwi_ws/src/lekiwi_ros2/lekiwi_navigation/maps/small_house \
-  --ros-args -p use_sim_time:=true -p save_map_timeout:=15.0
-```
-
-### C. Autonomous navigation against a saved map
-
-**Terminal 1 — sim:**
-```bash
-ros2 launch lekiwi_gazebo sim_bringup.launch.py world:=small_house.sdf
-```
-
-**Terminal 2 — Nav2 with AMCL:**
-```bash
-ros2 launch lekiwi_navigation nav2.launch.py \
-  map:=$HOME/lekiwi_ws/src/lekiwi_ros2/lekiwi_navigation/maps/small_house.yaml \
-  use_composition:=False
-```
-AMCL auto-initializes at the spawn pose `(-1.5, 0, 0)` (configured via `amcl.set_initial_pose` in [`nav2_params.yaml`](src/lekiwi_ros2/lekiwi_navigation/config/nav2_params.yaml)).
-
-**Terminal 3 — RViz with Nav2's prebuilt config (has the toolbar buttons):**
-```bash
-rviz2 -d /opt/ros/jazzy/share/nav2_bringup/rviz/nav2_default_view.rviz \
-  --ros-args -p use_sim_time:=true
-```
-
-In RViz toolbar, click **Nav2 Goal** and click anywhere on the map. The robot plans a path (green line) and drives there.
-
-CLI alternative for sending goals (no RViz click needed):
-```bash
-ros2 topic pub --once /goal_pose geometry_msgs/PoseStamped \
-  '{header: {frame_id: "map"}, pose: {position: {x: 1.0, y: 0.5}, orientation: {w: 1.0}}}'
-```
+Install + build per [docs/SETUP.md](docs/SETUP.md), then jump to [docs/USAGE.md](docs/USAGE.md) for the three core recipes:
+- **A** — autonomous mapping (slam_toolbox + Nav2 + explore_lite)
+- **B** — saved-map navigation (Nav2 + AMCL + Nav2-Goal clicks)
+- **C** — "go to the red ball" (sim camera + YOLO + color goal-sender)
 
 ## Worlds available
 
