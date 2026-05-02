@@ -21,10 +21,6 @@ install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}/
 )
 
-install(PROGRAMS
-  scripts/auto_map.py
-  DESTINATION lib/${PROJECT_NAME}
-)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

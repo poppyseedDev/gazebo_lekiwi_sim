@@ -21,8 +21,8 @@ def generate_launch_description():
             default_value=PathJoinSubstitution([
                 FindPackageShare('lekiwi_navigation'), 'maps', 'empty.yaml'
             ]),
-            description='Path to map.yaml. Default points at the placeholder bundled '
-                        'with this package; replace with a saved map.',
+            description='Path to map.yaml. Ignored when use_localization:=False '
+                        '(active SLAM provides the map dynamically).',
         ),
         DeclareLaunchArgument(
             'params_file',
@@ -36,6 +36,11 @@ def generate_launch_description():
             'use_composition', default_value='True',
             description='Whether to run all nodes in a single component container',
         ),
+        DeclareLaunchArgument(
+            'use_localization', default_value='True',
+            description='Bring up amcl + map_server. Set False for active SLAM '
+                        '(slam_toolbox supplies map → odom TF and /map externally).',
+        ),
 
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(PathJoinSubstitution([
@@ -43,11 +48,12 @@ def generate_launch_description():
                 'launch', 'bringup_launch.py',
             ])),
             launch_arguments={
-                'use_sim_time':    LaunchConfiguration('use_sim_time'),
-                'map':             LaunchConfiguration('map'),
-                'params_file':     LaunchConfiguration('params_file'),
-                'autostart':       LaunchConfiguration('autostart'),
-                'use_composition': LaunchConfiguration('use_composition'),
+                'use_sim_time':      LaunchConfiguration('use_sim_time'),
+                'map':               LaunchConfiguration('map'),
+                'params_file':       LaunchConfiguration('params_file'),
+                'autostart':         LaunchConfiguration('autostart'),
+                'use_composition':   LaunchConfiguration('use_composition'),
+                'use_localization':  LaunchConfiguration('use_localization'),
             }.items(),
         ),
     ])

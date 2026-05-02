@@ -133,7 +133,11 @@ def generate_launch_description():
                               description='Launch RViz alongside the sim'),
         DeclareLaunchArgument('headless', default_value='false',
                               description='Run gz sim without GUI'),
-        DeclareLaunchArgument('x', default_value='0.0'),
+        # Default spawn at (-1.5, 0) — middle of small_house's living room,
+        # >1 m clearance to every wall and obstacle. (0, 0) is in the central
+        # hallway where the east wall is only 0.50 m away — too tight for
+        # Nav2's 0.35 m inflation. Override with x:= y:= for other worlds.
+        DeclareLaunchArgument('x', default_value='-1.5'),
         DeclareLaunchArgument('y', default_value='0.0'),
         DeclareLaunchArgument('z', default_value='0.06'),
         DeclareLaunchArgument('render_engine', default_value='ogre',

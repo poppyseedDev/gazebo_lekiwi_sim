@@ -1,0 +1,29 @@
+explore_node:
+  ros__parameters:
+    # TF / topics
+    robot_base_frame: base_footprint
+    # Subscribe to Nav2's global costmap, NOT slam_toolbox's raw /map. Reason:
+    # the LD06 lidar at z=16 cm never observes cells directly under the robot,
+    # so /map keeps the footprint marked unknown and explore_lite "discovers"
+    # a 5-cell frontier ring right at the robot's pose — pointless 7 cm goals.
+    # The Nav2 costmap clears the footprint to free, so this artifact is gone.
+    # Keep inflation_radius small in nav2_params.yaml so frontier centroids
+    # near walls don't fall inside inflated cells the planner can't reach.
+    costmap_topic: /global_costmap/costmap
+    costmap_updates_topic: /global_costmap/costmap_updates
+    visualize: true                                  # publishes /explore/frontiers MarkerArray for RViz
+    return_to_init: true                             # drive back to start once exploration finishes
+
+    # Frontier picking
+    planner_frequency: 0.15                          # how often to re-pick a goal (Hz). Lower = let Nav2 finish planning before re-targeting.
+    progress_timeout: 30.0                           # blacklist a goal after this many seconds of no progress
+    min_frontier_size: 0.75                          # ignore frontier clusters shorter than ~15 cells of edge
+
+    # Goal scoring weights:
+    #   cost = potential_scale·distance − gain_scale·info_gain − orientation_scale·heading_diff
+    potential_scale: 3.0
+    orientation_scale: 0.0                           # holonomic — heading doesn't matter
+    gain_scale: 1.0
+
+    # TF lookup tolerance (s)
+    transform_tolerance: 0.5

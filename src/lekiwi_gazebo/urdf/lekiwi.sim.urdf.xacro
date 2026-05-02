@@ -12,7 +12,13 @@
 
   <xacro:include filename="$(find lekiwi_description)/urdf/lekiwi.common.xacro"/>
   <xacro:include filename="$(find lekiwi_description)/urdf/base/base.module.xacro"/>
-  <xacro:include filename="$(find lekiwi_description)/urdf/pantilt/pantilt.module.xacro"/>
+  <!-- pantilt module is intentionally excluded in sim:
+       its tilt/camera mount sits 5 cm above the LD06 laser plane (0.16 m),
+       so forward beams hit the mount every scan and slam maps it as a wall
+       right in front of the robot — frontiers then cluster at the robot's
+       footprint and explore_lite can't pick a useful goal.
+       Re-enable for real-robot work where the camera matters. -->
+  <!-- <xacro:include filename="$(find lekiwi_description)/urdf/pantilt/pantilt.module.xacro"/> -->
   <xacro:include filename="$(find lekiwi_gazebo)/urdf/lekiwi.gazebo.xacro"/>
 
   <!-- Wheel geometry shared with the real-robot control xacro -->
@@ -39,9 +45,7 @@
     <origin xyz="0 0 ${wheel_radius - wheel_base_offset_z}" rpy="0 0 0"/>
   </xacro:lekiwi_base_module>
 
-  <xacro:pantilt_module parent="base_link">
-    <origin xyz="${pantilt_base_offset_x} 0 ${pantilt_base_offset_z}" rpy="0 0 0"/>
-  </xacro:pantilt_module>
+  <!-- pantilt skipped in sim — see comment in include block above -->
 
   <xacro:lekiwi_gazebo/>
 
