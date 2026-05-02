@@ -237,5 +237,39 @@
       </link>
     </model>
 
+    <!-- Phase 2 detection targets: three colored balls in the living room.
+         All COCO class 32 ("sports ball"); the goal-sender node disambiguates
+         by sampling the bbox-center pixel hue. All static so they don't roll. -->
+    <model name="ball_yellow">
+      <static>true</static>
+      <pose>-2.5 1.0 0.10 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><sphere><radius>0.10</radius></sphere></geometry></collision>
+        <visual name="v"><geometry><sphere><radius>0.10</radius></sphere></geometry>
+          <material><ambient>1.0 0.85 0.0 1</ambient><diffuse>1.0 0.85 0.0 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="ball_red">
+      <static>true</static>
+      <pose>-2.5 -1.0 0.10 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><sphere><radius>0.10</radius></sphere></geometry></collision>
+        <visual name="v"><geometry><sphere><radius>0.10</radius></sphere></geometry>
+          <material><ambient>0.85 0.0 0.0 1</ambient><diffuse>0.85 0.0 0.0 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="ball_blue">
+      <static>true</static>
+      <pose>-1.0 -2.0 0.10 0 0 0</pose>
+      <link name="l">
+        <collision name="c"><geometry><sphere><radius>0.10</radius></sphere></geometry></collision>
+        <visual name="v"><geometry><sphere><radius>0.10</radius></sphere></geometry>
+          <material><ambient>0.0 0.2 0.9 1</ambient><diffuse>0.0 0.2 0.9 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
   </world>
 </sdf>

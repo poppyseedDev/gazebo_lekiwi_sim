@@ -35,6 +35,7 @@
   <xacro:property name="tilt_joint_lower" value="${-pi/2}"/>
   <xacro:property name="tilt_joint_upper" value="${pi/2}"/>
 
+
   <!-- Pan/tilt center steps placeholder for pantilt.module (unused in sim) -->
   <xacro:arg name="pan_center_steps"  default="2048"/>
   <xacro:arg name="tilt_center_steps" default="2048"/>
